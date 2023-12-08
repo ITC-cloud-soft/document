@@ -1,5 +1,23 @@
 # How to conntect to Azure AKS
-
+### 1.使用K8S config文件
+```C#
+class Program{
+   static async Task Main(string[] args){
+      var config = KubernetesClientConfiguration.BuildConfigFromConfigFile(
+       @"/Users/yanzou/.kube/config" // 配置文件的路径
+       // "aeontidb"       // 要使用的集群上下文
+      );
+      
+      Kubernetes client = new Kubernetes(config);
+      var listNamespaceAsync = await client.ListNamespaceAsync();
+      foreach (var names in listNamespaceAsync)
+      {
+          Console.WriteLine(names.Metadata.Name);
+      }
+   }
+}
+```
+### 2. 使用Azure 身份
 要使用 C# 与 Azure Kubernetes Service (AKS) API 进行连接并进行身份验证，您需要使用 Azure Active Directory (Azure AD) 进行身份验证，以获取访问 AKS 集群所需的访问令牌。以下是一些基本步骤：
 
 1. **注册应用程序并获取 Azure AD 身份验证信息**：
