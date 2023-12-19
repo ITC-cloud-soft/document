@@ -1,7 +1,7 @@
 function axiosWithInterceptor (accountId){
 
     const axiosInstance = axios.create({
-        timeout: 30000,
+        timeout: 1130000,
     });
 
     // Add a request interceptor
