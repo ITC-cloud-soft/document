@@ -1,6 +1,6 @@
 # CCFlow国际化实现
 ### 前言
-通过第三方插件[i8next](https://www.i18next.com/)实现国际化需求，详情请浏览插件的主业，我们的项目主要是jquery，所以要用到其jquery 插件
+通过第三方插件[i8next](https://www.i18next.com/)实现国际化需求，详情请浏览插件的主页，我们的项目主要是jquery，所以要用到其jquery 插件
 ### 1. 引入依赖
 - 在对应html界面引入i8next的js依赖
 ```javascript
