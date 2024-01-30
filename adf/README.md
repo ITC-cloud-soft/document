@@ -214,7 +214,39 @@ POST https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/
 
 ![Alt text](images/pl_export.png)
 
-## 1.9.2. パイプラインのインポート
+## 1.9.2. インポート先のADFにリンクサービス作成
+
+## 1.9.2.1. Azure Blob Storage
+
+![Alt text](images/ls_blob_1.png)
+
+![Alt text](images/ls_blob_2.png)
+
+## 1.9.2.2. Azure SQL Database
+
+![Alt text](images/ls_sql_1.png)
+
+![Alt text](images/ls_sql_2.png)
+
+## 1.9.2.3. TiDB
+
+![Alt text](images/ls_tidb_1.png)
+
+![Alt text](images/ls_tidb_2.png)
+
+ODBC接続文字の例
+
+```Text
+DRIVER={MySQL ODBC 8.2 Unicode Driver};   # SHIRのホステドマシンにインストールしたMySQL ODBCの名前
+Server=localhost;
+Database=api_core;
+User=root;
+PASSWORD=root;
+AllowUserVariables=True;
+MaxPoolSize=2000;
+```
+
+## 1.9.3. パイプラインのインポート
 
 ![Alt text](images/pl_import_1.png)
 
@@ -223,6 +255,77 @@ POST https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/
 ![Alt text](images/pl_import_3.png)
 
 ![Alt text](images/pl_import_4.png)
+
+## 1.9.4. パイプラインのパラメータ設定
+
+・パイプラインのパラメータ
+
+![Alt text](images/pl_parameters.png)
+
+・対象テーブルリストファイルの置き場所
+
+パイプライン「MultipleTabeCopy_All」と「MultipleTabeCopy_Merge」のWEBアクティビティ「GetTableNameListFromBlob」のURLの指定場所を実際のパースに変更する
+
+・ログ出力先の確認
+
+![Alt text](images/log_path.png)
+
+## 1.9.5. トリガーの設定
+
+データコピーのは毎日定時に実行するので、スケジュール化必要です。処理流れは下記の通りです。
+
+・***パイプライン「StartVM」→パイプライン「MultipleTabeCopy_All」***   ※運用開始一回のみ実施するので、手動で実行するか、登録したトリガーを一回実施してから停止するようにします
+
+・***パイプライン「StartVM」→パイプライン「MultipleTabeCopy_Merge」***　※毎日定時実行(初回運用した後)
+
+***重要：***　パイプライン「StartVM」のトリガー時刻はCOPY処理の20分前に設定必要です(SHIRの起動など)。
+
+トリガーについての参照資料：[Azure Data Factory または Azure Synapse Analytics でのパイプライン実行とトリガー](https://learn.microsoft.com/ja-jp/azure/data-factory/concepts-pipeline-execution-triggers)
+
+## 1.9.6. 抽出対象テーブルリストの用意
+
+## 1.9.6.1. スクリプト実行
+
+前提：
+
+・　Pythonで開発したスクリプトなので、Pythonのご用意が必要です。またモジュール「pymssql」を使ってAzure Sql Databaseへ接続するので、モジュール「pymssql」の事前にインストールも必要です。
+
+・　AzureSQLDatabase側のFWが運用中なので、スクリプト実行マシンのIP登録が必要です。
+
+```Python
+# モジュールなければ、インストールする
+pip install pymssql
+
+# スクリプト実行(実行前、接続情報などの変数の設定を確認してください)
+python3 GetTableList.py
+```
+
+## 1.9.6.2. スクリプト実行で出力したファイルをBlobStorageへアップロード
+
+※アップロード先はパイプライン「MultipleTabeCopy_All」のWEBアクティビティ「GetTableNameListFromBlob」のURLの指定場所にアップロードする
+
+![Alt text](images/table_list_path.png)
+
+## 1.10. 料金計算
+
+## 1.10.1. Virtual Machine
+
+1.料金計算はAzure料金計算ツールを利用して計算します
+[料金計算ツール](https://azure.microsoft.com/ja-jp/pricing/calculator/)
+
+![Alt text](images/vm_price.png)
+
+## 1.10.2. Azure Data Factory
+
+1.コンセプトの説明
+[価格オプションの詳細](https://azure.microsoft.com/ja-jp/pricing/details/data-factory/data-pipeline/)
+
+![Alt text](images/adf_price_1.png)
+
+2.料金計算
+![Alt text](images/adf_price_2.png)
+
+※[セルフホステッド統合ランタイムの価格モデルについて](https://learn.microsoft.com/ja-jp/azure/data-factory/better-understand-different-integration-runtime-charges#self-hosted-integration-runtime)
 
 <style>
 p:has(> img){
