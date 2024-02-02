@@ -1,0 +1,18 @@
+env:
+  role: data_plane
+  database: "off"
+  cluster_cert: /etc/secrets/kong-cluster-cert/tls.crt
+  cluster_cert_key: /etc/secrets/kong-cluster-cert/tls.key
+  lua_ssl_trusted_certificate: /etc/secrets/kong-cluster-cert/tls.crt
+  # CPへ通信用のドメイン名及びポート(デフォルト：8005)
+  cluster_control_plane: kong-cp-kong-cluster.kong.svc.cluster.local:8005
+
+secretVolumes:
+  # 作成したシークレット名
+- kong-cluster-cert
+
+admin:
+  enabled: false
+
+ingressController:
+  enabled: false

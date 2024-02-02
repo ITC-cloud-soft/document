@@ -20,11 +20,9 @@ of your API journey](https://konghq.com/products/kong-gateway)
 
 ## 1.3. 構築(Kubernetes)
 
-※Open Source版のKong Gatewayの機能は少ないので、本番には適用しないと思います。SaaS版の構築方法を次のように説明します。
-
 参照サイト：[Kong in K8s](https://docs.konghq.com/gateway/3.5.x/install/kubernetes/)
 
-### 1.3.1 Hybrid Modeの構成図
+### 1.3.1. Hybrid Modeの構成図
 
 ![Alt text](images/hybrid_mode.png)
 
@@ -42,7 +40,9 @@ of your API journey](https://konghq.com/products/kong-gateway)
 Kong クラスターがあるからといって、クライアント トラフィックが Kong ノード間で負荷分散されるわけではありません。トラフィックを分散するために、Kongノードの前にロードバランサーが必要です。代わりに、Kong クラスターは、これらのノードが同じ構成を共有することを意味します。
 [What a Kong cluster does and doesn’t do](https://docs.konghq.com/gateway/latest/production/deployment-topologies/traditional/)
 
-### 1.3.2 Data Plane Node(DP)の作成
+### 1.3.2. Hybrid ModeのGateWay構築
+
+### 1.3.2.1. Data Plane Node(DP)の作成(Konnect)
 
 １．[Kong Manager](https://signin.cloud.konghq.com/)へログインします
 
@@ -62,7 +62,79 @@ Kong クラスターがあるからといって、クライアント トラフ�
 
 (3) 「Create a Data Plane Node」から実行コマンドをコピーして環境にて叩きます
 
-### 1.3.3 サービス、ルートの登録
+### 1.3.2.2. Kubernetesにて構築
+
+参照資料：[Kong for Kubernetes](https://github.com/Kong/charts/blob/main/charts/kong/README.md)
+
+### 1.3.2.2.1. Postgresqlの構築
+
+1.PostgreSQLインストール
+
+```bash
+# パスワード、ネームスペースは変更可能
+helm install postgres --set auth.postgresPassword=postgres oci://registry-1.docker.io/bitnamicharts/postgresql -n dbkong --create-namespace
+```
+
+2.サービス名確認
+
+![Alt text](images/postgres_svc.png)
+
+3.Kong Gateway専用のDB作成
+
+```bash
+# 接続先は上記の確認したネームスペース名より組み合わせ
+kubectl run postgres-postgresql-client --rm --tty -i --restart='Never' --namespace kong --image docker.io/bitnami/postgresql:16.1.0-debian-11-r24 --env="PGPASSWORD=kong" \
+ --command -- psql --host postgres-postgresql.dbkong.svc.cluster.local -U kong -d kong -p 5432
+
+ # PostgreSQLに接続した後、下記のSQLを叩く
+ CREATE USER kong WITH PASSWORD 'kong';
+ CREATE DATABASE kong OWNER kong;
+```
+
+### 1.3.2.2.2. Control Plane Node(CP)の作成(K8S)
+
+```bash
+# helmにKongのレポジトリ追加
+helm repo add kong https://charts.konghq.com
+helm repo update
+
+# CP及びDPの間に通信用の証明書作成
+openssl req -new -x509 -nodes -newkey ec:<(openssl ecparam -name secp384r1) \
+  -keyout /tmp/cluster.key -out /tmp/cluster.crt \
+  -days 3650 -subj "/CN=kong_clustering"
+
+# Kubernetesのシークレットに保管
+kubectl create namespace kong
+kubectl create secret tls kong-cluster-cert -n kong --cert=/tmp/cluster.crt --key=/tmp/cluster.key
+
+# 本書の親フォルダーの配下にあるvalues/cp-values.yaml利用
+helm install kong-cp kong/kong -n kong --values /path-to-file/cp-values.yaml
+```
+
+### 1.3.2.2.3. Data Plane Node(DP)の作成(K8S)
+
+```bash
+# 本書の親フォルダーの配下にあるvalues/dp-values.yaml利用
+helm install kong-cp kong/kong -n kong --values /path-to-file/dp-values.yaml
+```
+
+### 1.3.2.2.4. Kong Managerへアクセス
+
+1.Port Forward
+
+```bash
+# ホストからAdmin APIのサービスポートとマッピング(ホスト側のポートも8001にしなければいけない)
+kubectl port-forward svc/kong-cp-kong-admin 8001:8001 -n kong
+
+# ホストからManagerのサービスポートとマッピング(ホスト側のポートは任意)
+kubectl port-forward svc/kong-cp-kong-manager 8002:8002 -n kong
+```
+
+2.ブラウザからアクセス
+
+![Alt text](images/kong_manager.png)
+
+### 1.3.3. サービス、ルートの登録
 
 Admin APIより：[Services and Routes](https://docs.konghq.com/gateway/3.5.x/get-started/services-and-routes/)
 
@@ -77,7 +149,7 @@ Kong Managerより：[Services and Routes](https://docs.konghq.com/gateway/3.5.x
 (2) Route設定(アクセスエンドポイント)
 ![Alt text](images/config_route.png)
 
-### 1.3.4 Load balancing
+### 1.3.4. Load balancing
 
 Admin APIより：[Load Balancing](https://docs.konghq.com/gateway/3.5.x/get-started/load-balancing/)
 
@@ -91,11 +163,11 @@ Kong Managerより：[Load Balancing](https://docs.konghq.com/gateway/3.5.x/kong
 
 ## 1.4. Firewall
 
-### 1.4.1 コンフィグファイルより
+### 1.4.1. コンフィグファイルより
 
 参照サイト：[Firewall](https://docs.konghq.com/gateway/latest/production/networking/firewall/#firewall)
 
-### 1.4.2 IP Restrictionプラグインより
+### 1.4.2. IP Restrictionプラグインより
 
 参照サイト：[IP Restriction Configuration](https://docs.konghq.com/hub/kong-inc/ip-restriction/configuration/)
 
@@ -117,7 +189,6 @@ CORS（Cross-Origin Resource Sharing）の設定はCORSプラグインを使用�
 ※各項目にはどんな値を設定するのは下記のサイトを参照してください。
 [Kong: CORS Configuration](https://docs.konghq.com/hub/kong-inc/cors/configuration/)
 [MDN: Cross-Origin Resource Sharing (CORS)](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
-
 
 <style>
 p:has(> img){

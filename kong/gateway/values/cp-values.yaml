@@ -1,0 +1,38 @@
+env:
+  role: control_plane
+  database: postgres
+  # 構築したPostgreSQLのドメイン名
+  pg_host: postgres-postgresql.dbkong.svc.cluster.local
+  # DB構築時のユーザ名
+  pg_user: kong
+  # DB構築時のパスワード
+  pg_password: kong
+  admin_listen: 0.0.0.0:8001 reuseport backlog=16384, 0.0.0.0:8444 http2 ssl reuseport backlog=16384
+  # 証明書のパース
+  cluster_cert: /etc/secrets/kong-cluster-cert/tls.crt
+  cluster_cert_key: /etc/secrets/kong-cluster-cert/tls.key
+
+secretVolumes:
+  # 作成したシークレット名
+- kong-cluster-cert
+
+admin:
+  enabled: true
+  http:
+    enabled: true
+    servicePort: 8001
+    containerPort: 8001
+
+cluster:
+  enabled: true
+  tls:
+    enabled: true
+
+proxy:
+   # CPのプロキシは無効にする
+  enabled: false
+
+ingressController:
+  env:
+   # NS名称/DPのプロキシ名
+    publish_service: kong/kong-dp-kong-proxy
