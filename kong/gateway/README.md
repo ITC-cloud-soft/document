@@ -83,8 +83,8 @@ helm install postgres --set auth.postgresPassword=postgres oci://registry-1.dock
 
 ```bash
 # 接続先は上記の確認したネームスペース名より組み合わせ
-kubectl run postgres-postgresql-client --rm --tty -i --restart='Never' --namespace kong --image docker.io/bitnami/postgresql:16.1.0-debian-11-r24 --env="PGPASSWORD=kong" \
- --command -- psql --host postgres-postgresql.dbkong.svc.cluster.local -U kong -d kong -p 5432
+kubectl run postgres-postgresql-client --rm --tty -i --restart='Never' --namespace dbkong --image docker.io/bitnami/postgresql:16.1.0-debian-11-r24 --env="PGPASSWORD=postgres" \
+ --command -- psql --host postgres-postgresql -U postgres -d postgres -p 5432
 
  # PostgreSQLに接続した後、下記のSQLを叩く
  CREATE USER kong WITH PASSWORD 'kong';
