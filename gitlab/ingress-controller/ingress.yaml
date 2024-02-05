@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: crowd-batch-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/proxy-body-size: 15m
+    nginx.ingress.kubernetes.io/client_max_body_size: 15m
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - worktimeapi.djpeaks01.aeonplatform.dev
+  rules:
+    - host: worktimeapi.djpeaks01.aeonplatform.dev
+      http:
+        paths:
+          - pathType: Prefix
+            path: /batch(/|$)(.*)
+            backend:
+              service:
+                name: gitlab-nginx-ingress-controller
+                port:
+                  number: 80
