@@ -115,7 +115,7 @@ helm install kong-cp kong/kong -n kong --values /path-to-file/cp-values.yaml
 
 ```bash
 # 本書の親フォルダーの配下にあるvalues/dp-values.yaml利用
-helm install kong-cp kong/kong -n kong --values /path-to-file/dp-values.yaml
+helm install kong-dp kong/kong -n kong --values /path-to-file/dp-values.yaml
 ```
 
 ### 1.3.2.2.4. Kong Managerへアクセス
@@ -131,6 +131,8 @@ kubectl port-forward svc/kong-cp-kong-manager 8002:8002 -n kong
 ```
 
 2.ブラウザからアクセス
+
+※処理1でマッピングした「Managerのサービスポート」を利用してManagerポータルへサクセスします(上記の場合、「http://localhost:8002」であります)
 
 ![Alt text](images/kong_manager.png)
 
