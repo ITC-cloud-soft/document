@@ -1,24 +1,68 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: crowd-batch-ingress
+  name: all-ingress
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
-    nginx.ingress.kubernetes.io/proxy-body-size: 15m
-    nginx.ingress.kubernetes.io/client_max_body_size: 15m
+    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - worktimeapi.djpeaks01.aeonplatform.dev
+        - kas.thomaszou2077.com
+    - hosts:
+        - minio.thomaszou2077.com
+      secretName: gitlab-minio-tls
+    - hosts:
+        - registry.thomaszou2077.com
+      secretName: gitlab-registry-tls
+    - hosts:
+        - gitlab.thomaszou2077.com
+      secretName: gitlab-gitlab-tls
   rules:
-    - host: worktimeapi.djpeaks01.aeonplatform.dev
+    - host: kas.thomaszou2077.com
       http:
         paths:
-          - pathType: Prefix
-            path: /batch(/|$)(.*)
+            - path: /k8s-proxy/
+              pathType: Prefix
+              backend:
+                service:
+                  name: gitlab-kas
+                  port:
+                    number: 8154
+            - path: /
+              pathType: Prefix
+              backend:
+                service:
+                  name: gitlab-kas
+                  port:
+                    number: 8150
+    - host: minio.thomaszou2077.com
+      http:
+        paths:
+            - path: /
+              pathType: Prefix
+              backend:
+                service:
+                  name: gitlab-minio-svc
+                  port:
+                    number: 9000
+    - host: registry.thomaszou2077.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
             backend:
               service:
-                name: gitlab-nginx-ingress-controller
+                name: gitlab-registry
                 port:
-                  number: 80
+                  number: 5000
+    - host: gitlab.thomaszou2077.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gitlab-webservice-default
+                port:
+                  number: 8181
