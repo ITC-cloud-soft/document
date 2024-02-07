@@ -66,6 +66,7 @@ kubectl create secret tls test-tls --key="tls.key" --cert="tls.crt" -n saas-core
 ```
 kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+※argocd-serverのDepolymentを編集し、「--insecure」をargsに追加する
 ```
 #### ②argocd-serverをLoadBalancerに変更する
 ```
