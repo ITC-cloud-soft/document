@@ -1,0 +1,1 @@
+kubectl create secret tls netdata-tls --key="kv-saas-core-saas.key" --cert="kv-saas-core-saas.crt" -n netdata
