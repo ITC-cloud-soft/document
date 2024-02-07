@@ -89,6 +89,7 @@ argocd account update-password
 #### ⑥ArgoCDアプリの作成
 ```
 argocd repo add git@github.com:ITC-cloud-soft/Saas-AppRelease.git --insecure-ignore-host-key --ssh-private-key-path id_ed25519
+or (argocd repo add https://gitlab.thomaszou2077.com/apiadmin/api-apprelease.git --username yyyy --password xxxxxxxxxxx)
 argocd app create saas-core --repo git@github.com:ITC-cloud-soft/Saas-AppRelease.git --revision main --path overlays/dev --dest-server https://kubernetes.default.svc --dest-namespace saas-core
 argocd app sync saas-core
 ```
