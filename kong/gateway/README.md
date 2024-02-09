@@ -151,7 +151,41 @@ Kong Managerより：[Services and Routes](https://docs.konghq.com/gateway/3.5.x
 (2) Route設定(アクセスエンドポイント)
 ![Alt text](images/config_route.png)
 
-### 1.3.4. Load balancing
+### 1.3.4. ルートごとにアクセストークン設定
+
+### 1.3.4.1. プラグイン「JWT」設定
+
+参照資料：[プラグインJWTの概要](https://docs.konghq.com/hub/kong-inc/jwt/)
+
+![Alt text](images/config_token_1.png)
+
+![Alt text](images/config_token_2.png)
+
+![Alt text](images/config_token_3.png)
+
+### 1.3.4.2. Route専用のコンシュマ作成
+
+![Alt text](images/config_token_4.png)
+
+### 1.3.4.3. コンシュマのクレデンシャル作成
+
+![Alt text](images/config_token_5.png)
+
+![Alt text](images/config_token_6.png)
+
+### 1.3.4.4. アクセストークン作成
+
+JWTのオンラインツールを利用してアクセストークンを作成する。　[jwt.io](https://jwt.io/)
+
+![Alt text](images/config_token_7.png)
+
+![Alt text](images/config_token_8.png)
+
+### 1.3.4.5. 認証確認
+
+![Alt text](images/config_token_9.png)
+
+### 1.3.5. Load balancing
 
 Admin APIより：[Load Balancing](https://docs.konghq.com/gateway/3.5.x/get-started/load-balancing/)
 
