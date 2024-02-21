@@ -1,6 +1,9 @@
 env:
   role: data_plane
   database: "off"
+  trusted_ips: 0.0.0.0/0
+  real_ip_header: X-Forwarded-For
+  real_ip_recursive: "on"
   cluster_cert: /etc/secrets/kong-cluster-cert/tls.crt
   cluster_cert_key: /etc/secrets/kong-cluster-cert/tls.key
   lua_ssl_trusted_certificate: /etc/secrets/kong-cluster-cert/tls.crt
@@ -11,8 +14,35 @@ secretVolumes:
   # 作成したシークレット名
 - kong-cluster-cert
 
+proxy:
+  enabled: true
+  type: NodePort
+
 admin:
   enabled: false
 
 ingressController:
   enabled: false
+
+# Kong pod count.
+# It has no effect when autoscaling.enabled is set to true
+replicaCount: 3
+
+# Enable autoscaling using HorizontalPodAutoscaler
+# When configuring an HPA, you must set resource requests on all containers via
+# "resources" and, if using the controller, "ingressController.resources" in values.yaml
+autoscaling:
+  enabled: false
+  minReplicas: 3
+  maxReplicas: 6
+  behavior: {}
+  ## targetCPUUtilizationPercentage only used if the cluster doesn't support autoscaling/v2 or autoscaling/v2beta
+  targetCPUUtilizationPercentage:
+  ## Otherwise for clusters that do support autoscaling/v2 or autoscaling/v2beta, use metrics
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80
